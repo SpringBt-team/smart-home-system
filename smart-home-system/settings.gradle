@@ -1,0 +1,6 @@
+rootProject.name = 'smart-home-system'
+
+include 'common'
+include 'server'
+include 'client-console'
+include 'device-simulator'

@@ -1,0 +1,7 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // сюди підуть спільні DTO/enum для REST і WebSocket протоколу
+}
