@@ -17,4 +17,5 @@ jobs:
           distribution: 'temurin'
           java-version: '25'
       - name: Build with Gradle
+        working-directory: ./smart-home-system
         run: ./gradlew build
