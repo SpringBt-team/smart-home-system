@@ -17,4 +17,6 @@ jobs:
           distribution: 'temurin'
           java-version: '25'
       - name: Build with Gradle
-        run: ./gradlew build
+        run: |
+          chmod +x gradlew
+          ./gradlew build
