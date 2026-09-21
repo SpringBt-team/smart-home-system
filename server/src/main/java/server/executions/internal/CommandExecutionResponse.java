@@ -3,13 +3,14 @@ package server.executions.internal;
 import server.executions.CommandExecution;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 record CommandExecutionResponse(
         UUID id,
         UUID deviceId,
         UUID commandId,
-        String argsJson,
+        Map<String, Object> args,
         String status,
         Instant requestedAt) {
 
@@ -18,7 +19,7 @@ record CommandExecutionResponse(
                 execution.id(),
                 execution.deviceId(),
                 execution.commandId(),
-                execution.argsJson(),
+                execution.args(),
                 execution.status().name(),
                 execution.requestedAt());
     }

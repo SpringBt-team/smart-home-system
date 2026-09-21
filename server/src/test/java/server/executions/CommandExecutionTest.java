@@ -6,6 +6,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.Instant;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -41,7 +42,7 @@ class CommandExecutionTest {
     private CommandExecution executionWithStatus(ExecutionStatus status) {
         return new CommandExecution(
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                "{}", status, Instant.now());
+                Map.of(), status, Instant.now());
     }
 
     @ParameterizedTest(name = "{0} -> {1} is allowed")
