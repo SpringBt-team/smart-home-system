@@ -19,7 +19,7 @@ record CommandExecutionResponse(
                 execution.deviceId(),
                 execution.commandId(),
                 execution.argsJson(),
-                execution.status(),
+                execution.status().name(),
                 execution.requestedAt());
     }
 }

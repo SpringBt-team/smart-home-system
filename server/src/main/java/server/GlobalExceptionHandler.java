@@ -14,6 +14,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import server.auth.InvalidCredentialsException;
 import server.commands.CommandNotFoundException;
 import server.executions.InvalidCommandArgsException;
+import server.executions.InvalidStateTransitionException;
 import server.users.EmailAlreadyRegisteredException;
 import server.users.UserNotFoundException;
 import server.devices.DeviceNotFoundException;
@@ -60,6 +61,11 @@ class GlobalExceptionHandler {
             problemDetail.setProperty("errors", ex.getErrors());
         }
         return problemDetail;
+    }
+
+    @ExceptionHandler(InvalidStateTransitionException.class)
+    ProblemDetail handleInvalidStateTransition(InvalidStateTransitionException ex) {
+        return problemDetail(HttpStatus.UNPROCESSABLE_CONTENT, "Некоректний перехід стану виконання", ex.getMessage(), ex);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

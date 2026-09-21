@@ -14,6 +14,7 @@ import server.commands.CommandService;
 import server.commands.RequiredRole;
 import server.executions.CommandExecution;
 import server.executions.CommandExecutionService;
+import server.executions.ExecutionStatus;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -59,7 +60,7 @@ class CommandExecutionControllerTest {
         when(commandService.findByDeviceIdAndCommandId(deviceId, commandId))
                 .thenReturn(new Command(commandId, deviceId, "setBrightness", BRIGHTNESS_SCHEMA, RequiredRole.OWNER, requestedAt));
         when(commandExecutionService.execute(eq(deviceId), eq(commandId), anyString()))
-                .thenReturn(new CommandExecution(executionId, deviceId, commandId, "{\"brightness\":80}", "PENDING", requestedAt));
+                .thenReturn(new CommandExecution(executionId, deviceId, commandId, "{\"brightness\":80}", ExecutionStatus.PENDING, requestedAt));
 
         mockMvc.perform(post("/devices/{deviceId}/commands/{commandId}/executions", deviceId, commandId)
                         .contentType(MediaType.APPLICATION_JSON)

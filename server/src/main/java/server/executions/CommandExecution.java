@@ -8,6 +8,13 @@ public record CommandExecution(
         UUID deviceId,
         UUID commandId,
         String argsJson,
-        String status,
+        ExecutionStatus status,
         Instant requestedAt) {
+
+    public CommandExecution transitionTo(ExecutionStatus newStatus) {
+        if (!status.canTransitionTo(newStatus)) {
+            throw new InvalidStateTransitionException(status, newStatus);
+        }
+        return new CommandExecution(id, deviceId, commandId, argsJson, newStatus, requestedAt);
+    }
 }
