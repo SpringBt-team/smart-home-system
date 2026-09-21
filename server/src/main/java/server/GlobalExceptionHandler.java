@@ -15,6 +15,7 @@ import server.auth.InvalidCredentialsException;
 import server.commands.CommandNotFoundException;
 import server.executions.InvalidCommandArgsException;
 import server.executions.InvalidStateTransitionException;
+import server.executions.UnsupportedCommandException;
 import server.users.EmailAlreadyRegisteredException;
 import server.users.UserNotFoundException;
 import server.devices.DeviceNotFoundException;
@@ -66,6 +67,11 @@ class GlobalExceptionHandler {
     @ExceptionHandler(InvalidStateTransitionException.class)
     ProblemDetail handleInvalidStateTransition(InvalidStateTransitionException ex) {
         return problemDetail(HttpStatus.UNPROCESSABLE_CONTENT, "Некоректний перехід стану виконання", ex.getMessage(), ex);
+    }
+
+    @ExceptionHandler(UnsupportedCommandException.class)
+    ProblemDetail handleUnsupportedCommand(UnsupportedCommandException ex) {
+        return problemDetail(HttpStatus.BAD_REQUEST, "Команда не підтримується", ex.getMessage(), ex);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

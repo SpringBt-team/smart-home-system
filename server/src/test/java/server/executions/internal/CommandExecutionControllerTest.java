@@ -4,22 +4,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import server.commands.Command;
 import server.commands.CommandNotFoundException;
-import server.commands.CommandService;
-import server.commands.RequiredRole;
 import server.executions.CommandExecution;
 import server.executions.CommandExecutionService;
 import server.executions.ExecutionStatus;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -29,23 +26,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(CommandExecutionController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(CommandArgsValidator.class)
 class CommandExecutionControllerTest {
-
-    private static final String BRIGHTNESS_SCHEMA = """
-            {
-              "type": "object",
-              "properties": { "brightness": { "type": "integer", "minimum": 0, "maximum": 100 } },
-              "required": ["brightness"],
-              "additionalProperties": false
-            }
-            """;
 
     @Autowired
     private MockMvc mockMvc;
-
-    @MockitoBean
-    private CommandService commandService;
 
     @MockitoBean
     private CommandExecutionService commandExecutionService;
@@ -57,16 +41,15 @@ class CommandExecutionControllerTest {
         UUID executionId = UUID.randomUUID();
         Instant requestedAt = Instant.parse("2026-01-01T00:00:00Z");
 
-        when(commandService.findByDeviceIdAndCommandId(deviceId, commandId))
-                .thenReturn(new Command(commandId, deviceId, "setBrightness", BRIGHTNESS_SCHEMA, RequiredRole.OWNER, requestedAt));
-        when(commandExecutionService.execute(eq(deviceId), eq(commandId), anyString()))
-                .thenReturn(new CommandExecution(executionId, deviceId, commandId, "{\"brightness\":80}", ExecutionStatus.PENDING, requestedAt));
+        when(commandExecutionService.execute(eq(deviceId), eq(commandId), anyMap()))
+                .thenReturn(new CommandExecution(
+                        executionId, deviceId, commandId, Map.of("brightness", 80), ExecutionStatus.PENDING, requestedAt));
 
         mockMvc.perform(post("/devices/{deviceId}/commands/{commandId}/executions", deviceId, commandId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "argsJson": "{\\"brightness\\":80}"
+                                  "args": { "brightness": 80 }
                                 }
                                 """))
                 .andExpect(status().isAccepted())
@@ -83,14 +66,14 @@ class CommandExecutionControllerTest {
         UUID deviceId = UUID.randomUUID();
         UUID commandId = UUID.randomUUID();
 
-        when(commandService.findByDeviceIdAndCommandId(deviceId, commandId))
+        when(commandExecutionService.execute(eq(deviceId), eq(commandId), anyMap()))
                 .thenThrow(new CommandNotFoundException(deviceId, commandId));
 
         mockMvc.perform(post("/devices/{deviceId}/commands/{commandId}/executions", deviceId, commandId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "argsJson": "{}"
+                                  "args": { "brightness": 80 }
                                 }
                                 """))
                 .andExpect(status().isNotFound())
@@ -101,17 +84,34 @@ class CommandExecutionControllerTest {
     }
 
     @Test
-    void executeCommandReturns400WhenArgsJsonIsBlank() throws Exception {
+    void executeCommandAcceptsEmptyArgsForArgumentlessCommand() throws Exception {
         UUID deviceId = UUID.randomUUID();
         UUID commandId = UUID.randomUUID();
+        UUID executionId = UUID.randomUUID();
+        Instant requestedAt = Instant.parse("2026-01-01T00:00:00Z");
+
+        when(commandExecutionService.execute(eq(deviceId), eq(commandId), eq(Map.of())))
+                .thenReturn(new CommandExecution(
+                        executionId, deviceId, commandId, Map.of(), ExecutionStatus.PENDING, requestedAt));
 
         mockMvc.perform(post("/devices/{deviceId}/commands/{commandId}/executions", deviceId, commandId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "argsJson": ""
+                                  "args": {}
                                 }
                                 """))
+                .andExpect(status().isAccepted());
+    }
+
+    @Test
+    void executeCommandReturns400WhenArgsFieldIsMissing() throws Exception {
+        UUID deviceId = UUID.randomUUID();
+        UUID commandId = UUID.randomUUID();
+
+        mockMvc.perform(post("/devices/{deviceId}/commands/{commandId}/executions", deviceId, commandId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -124,70 +124,10 @@ class CommandExecutionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "argsJson": "{}",
+                                  "args": { "brightness": 80 },
                                   "priority": "high"
                                 }
                                 """))
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void executeCommandReturns400WhenRequiredArgIsMissing() throws Exception {
-        UUID deviceId = UUID.randomUUID();
-        UUID commandId = UUID.randomUUID();
-
-        when(commandService.findByDeviceIdAndCommandId(deviceId, commandId))
-                .thenReturn(new Command(commandId, deviceId, "setBrightness", BRIGHTNESS_SCHEMA, RequiredRole.OWNER, Instant.now()));
-
-        mockMvc.perform(post("/devices/{deviceId}/commands/{commandId}/executions", deviceId, commandId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "argsJson": "{}"
-                                }
-                                """))
-                .andExpect(status().isBadRequest())
-                .andExpect(header().string("Content-Type", "application/problem+json"))
-                .andExpect(jsonPath("$.errors.brightness").exists());
-    }
-
-    @Test
-    void executeCommandReturns400WhenArgIsNotDefinedByCommandSchema() throws Exception {
-        UUID deviceId = UUID.randomUUID();
-        UUID commandId = UUID.randomUUID();
-
-        when(commandService.findByDeviceIdAndCommandId(deviceId, commandId))
-                .thenReturn(new Command(commandId, deviceId, "setBrightness", BRIGHTNESS_SCHEMA, RequiredRole.OWNER, Instant.now()));
-
-        mockMvc.perform(post("/devices/{deviceId}/commands/{commandId}/executions", deviceId, commandId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "argsJson": "{\\"brightness\\": 80, \\"color\\": \\"red\\"}"
-                                }
-                                """))
-                .andExpect(status().isBadRequest())
-                .andExpect(header().string("Content-Type", "application/problem+json"))
-                .andExpect(jsonPath("$.errors.color").exists());
-    }
-
-    @Test
-    void executeCommandReturns400WhenArgIsOutOfRange() throws Exception {
-        UUID deviceId = UUID.randomUUID();
-        UUID commandId = UUID.randomUUID();
-
-        when(commandService.findByDeviceIdAndCommandId(deviceId, commandId))
-                .thenReturn(new Command(commandId, deviceId, "setBrightness", BRIGHTNESS_SCHEMA, RequiredRole.OWNER, Instant.now()));
-
-        mockMvc.perform(post("/devices/{deviceId}/commands/{commandId}/executions", deviceId, commandId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "argsJson": "{\\"brightness\\": 150}"
-                                }
-                                """))
-                .andExpect(status().isBadRequest())
-                .andExpect(header().string("Content-Type", "application/problem+json"))
-                .andExpect(jsonPath("$.errors.brightness").exists());
     }
 }
