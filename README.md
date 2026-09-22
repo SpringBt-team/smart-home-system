@@ -141,10 +141,22 @@
 | `deviceId` | `FK → Device` | дублюється для швидшого пошуку логів по пристрою без join |
 | `executedById` | `FK → User` | |
 | `args` | `JSON` | фактичні значення аргументів цього виклику |
-| `status` | `enum{PENDING, SUCCESS, FAILED, TIMEOUT}` | `PENDING` — поки очікуємо відповідь від симулятора по WebSocket |
+| `status` | `enum{PENDING, RUNNING, SUCCESS, FAILED, TIMEOUT}` | `PENDING` — у черзі; `RUNNING` — передано на виконання, очікуємо відповідь; `TIMEOUT` — пристрій не відповів вчасно |
 | `result` | `JSON` | що повернув пристрій |
 | `requestedAt` | `timestamp` | |
-| `completedAt` | `timestamp` | `null`, поки `status = PENDING` |
+| `completedAt` | `timestamp` | `null`, поки `status` у `PENDING` або `RUNNING` |
+
+### Модель переходів `CommandExecution.status`
+
+| Із стану | Дозволені переходи |
+|---|---|
+| `PENDING` | `RUNNING` |
+| `RUNNING` | `SUCCESS`, `FAILED`, `TIMEOUT` |
+| `SUCCESS` | — (термінальний) |
+| `FAILED` | — (термінальний) |
+| `TIMEOUT` | — (термінальний) |
+
+Будь-яка спроба іншого переходу (напр. `PENDING → SUCCESS` в обхід `RUNNING`, чи вихід з термінального стану) кидає `InvalidStateTransitionException`.
 
 ## 8. Стек
 * Java 25

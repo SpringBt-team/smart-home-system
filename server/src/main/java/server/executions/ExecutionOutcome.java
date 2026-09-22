@@ -1,7 +1,14 @@
 package server.executions;
 
-public enum ExecutionOutcome {
-    SUCCESS,
-    REJECTED,
-    DEVICE_UNAVAILABLE
+public record ExecutionOutcome(Status status, String message) {
+
+    public enum Status {
+        SUCCESS,
+        REJECTED,
+        DEVICE_UNAVAILABLE
+    }
+
+    public boolean isSuccess() {
+        return status == Status.SUCCESS;
+    }
 }

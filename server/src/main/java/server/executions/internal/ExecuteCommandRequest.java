@@ -1,8 +1,10 @@
 package server.executions.internal;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.Map;
 
 record ExecuteCommandRequest(
-        @NotBlank(message = "Аргументи команди (argsJson) є обов'язковими")
-        String argsJson) {
+        @NotNull(message = "Поле args є обов'язковим (можна передати порожній об'єкт {})")
+        Map<String, Object> args) {
 }
