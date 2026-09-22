@@ -56,7 +56,7 @@ class CommandExecutionServiceImpl implements CommandExecutionService {
 
         ExecutionOutcome outcome = strategy.execute(deviceId, command, args);
         execution = commandExecutionRepository.save(
-                execution.transitionTo(outcome.success() ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED));
+                execution.transitionTo(outcome.isSuccess() ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED));
 
         eventPublisher.publishEvent(new CommandExecutedEvent(execution.id(), execution.status()));
 
