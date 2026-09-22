@@ -1,8 +1,8 @@
 package server.executions.internal;
 
 import org.junit.jupiter.api.Test;
+import server.commands.Command;
 import server.executions.DeviceClient;
-import server.executions.DeviceExecutionResult;
 import server.executions.ExecutionOutcome;
 
 import java.util.Map;
@@ -33,20 +33,24 @@ class SetModeStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("mode", "cool");
         when(deviceClient.send(any(UUID.class), eq("set_mode"), anyMap()))
-                .thenReturn(DeviceExecutionResult.success("ok"));
+                .thenReturn(new ExecutionOutcome(true, "ok"));
 
-        DeviceExecutionResult result = strategy.execute(deviceId, "set_mode", args);
+        ExecutionOutcome result = strategy.execute(deviceId, command("set_mode"), args);
 
         verify(deviceClient).send(deviceId, "set_mode", args);
-        assertThat(result.outcome()).isEqualTo(ExecutionOutcome.SUCCESS);
+        assertThat(result.success()).isTrue();
     }
 
     @Test
     void rejectsUnknownModeWithoutCallingDevice() {
-        DeviceExecutionResult result =
-                strategy.execute(UUID.randomUUID(), "set_mode", Map.of("mode", "turbo"));
+        ExecutionOutcome result =
+                strategy.execute(UUID.randomUUID(), command("set_mode"), Map.of("mode", "turbo"));
 
-        assertThat(result.outcome()).isEqualTo(ExecutionOutcome.REJECTED);
+        assertThat(result.success()).isFalse();
         verifyNoInteractions(deviceClient);
+    }
+
+    private static Command command(String name) {
+        return new Command(UUID.randomUUID(), UUID.randomUUID(), name, null, null, null);
     }
 }

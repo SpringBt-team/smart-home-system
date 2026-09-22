@@ -1,8 +1,9 @@
 package server.executions.internal;
 
+import server.commands.Command;
 import server.executions.CommandExecutionStrategy;
 import server.executions.DeviceClient;
-import server.executions.DeviceExecutionResult;
+import server.executions.ExecutionOutcome;
 
 import java.util.Map;
 import java.util.Optional;
@@ -25,46 +26,45 @@ abstract class AbstractDeviceCommandStrategy implements CommandExecutionStrategy
     }
 
     @Override
-    public DeviceExecutionResult execute(UUID deviceId, String command, Map<String, Object> args) {
+    public ExecutionOutcome execute(UUID deviceId, Command command, Map<String, Object> args) {
         Map<String, Object> safeArgs = args == null ? Map.of() : args;
         return validate(safeArgs).orElseGet(() -> deviceClient.send(deviceId, commandName, safeArgs));
     }
 
-    Optional<DeviceExecutionResult> validate(Map<String, Object> args) {
+    Optional<ExecutionOutcome> validate(Map<String, Object> args) {
         return Optional.empty();
     }
 
-    static Optional<DeviceExecutionResult> requireNumber(Map<String, Object> args, String key) {
+    private static Optional<ExecutionOutcome> rejected(String message) {
+        return Optional.of(new ExecutionOutcome(false, message));
+    }
+
+    static Optional<ExecutionOutcome> requireNumber(Map<String, Object> args, String key) {
         if (!(args.get(key) instanceof Number)) {
-            return Optional.of(DeviceExecutionResult.rejected(
-                    "Аргумент " + key + " є обов'язковим і має бути числом"));
+            return rejected("Аргумент " + key + " є обов'язковим і має бути числом");
         }
         return Optional.empty();
     }
 
-    static Optional<DeviceExecutionResult> requireIntInRange(
+    static Optional<ExecutionOutcome> requireIntInRange(
             Map<String, Object> args, String key, int min, int max) {
         if (!(args.get(key) instanceof Number number)) {
-            return Optional.of(DeviceExecutionResult.rejected(
-                    "Аргумент " + key + " є обов'язковим і має бути числом"));
+            return rejected("Аргумент " + key + " є обов'язковим і має бути числом");
         }
         int value = number.intValue();
         if (value < min || value > max) {
-            return Optional.of(DeviceExecutionResult.rejected(
-                    "Аргумент " + key + " має бути в межах " + min + ".." + max));
+            return rejected("Аргумент " + key + " має бути в межах " + min + ".." + max);
         }
         return Optional.empty();
     }
 
-    static Optional<DeviceExecutionResult> requireOneOf(
+    static Optional<ExecutionOutcome> requireOneOf(
             Map<String, Object> args, String key, Set<String> allowed) {
         if (!(args.get(key) instanceof String value) || value.isBlank()) {
-            return Optional.of(DeviceExecutionResult.rejected(
-                    "Аргумент " + key + " є обов'язковим і має бути рядком"));
+            return rejected("Аргумент " + key + " є обов'язковим і має бути рядком");
         }
         if (!allowed.contains(value)) {
-            return Optional.of(DeviceExecutionResult.rejected(
-                    "Аргумент " + key + " має бути одним із " + allowed));
+            return rejected("Аргумент " + key + " має бути одним із " + allowed);
         }
         return Optional.empty();
     }

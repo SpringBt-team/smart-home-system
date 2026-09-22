@@ -2,7 +2,7 @@ package server.executions.internal;
 
 import org.springframework.stereotype.Component;
 import server.executions.DeviceClient;
-import server.executions.DeviceExecutionResult;
+import server.executions.ExecutionOutcome;
 
 import java.util.Map;
 import java.util.Optional;
@@ -18,7 +18,7 @@ class SetModeStrategy extends AbstractDeviceCommandStrategy {
     }
 
     @Override
-    Optional<DeviceExecutionResult> validate(Map<String, Object> args) {
+    Optional<ExecutionOutcome> validate(Map<String, Object> args) {
         return requireOneOf(args, "mode", MODES);
     }
 }

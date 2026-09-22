@@ -1,8 +1,8 @@
 package server.executions.internal;
 
 import org.junit.jupiter.api.Test;
+import server.commands.Command;
 import server.executions.DeviceClient;
-import server.executions.DeviceExecutionResult;
 import server.executions.ExecutionOutcome;
 
 import java.util.Map;
@@ -33,12 +33,12 @@ class SetTemperatureStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("temperature", 21);
         when(deviceClient.send(any(UUID.class), eq("set_temperature"), anyMap()))
-                .thenReturn(DeviceExecutionResult.success("ok"));
+                .thenReturn(new ExecutionOutcome(true, "ok"));
 
-        DeviceExecutionResult result = strategy.execute(deviceId, "set_temperature", args);
+        ExecutionOutcome result = strategy.execute(deviceId, command("set_temperature"), args);
 
         verify(deviceClient).send(deviceId, "set_temperature", args);
-        assertThat(result.outcome()).isEqualTo(ExecutionOutcome.SUCCESS);
+        assertThat(result.success()).isTrue();
     }
 
     @Test
@@ -46,9 +46,9 @@ class SetTemperatureStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("temperature", 21.5);
         when(deviceClient.send(any(UUID.class), eq("set_temperature"), anyMap()))
-                .thenReturn(DeviceExecutionResult.success("ok"));
+                .thenReturn(new ExecutionOutcome(true, "ok"));
 
-        strategy.execute(deviceId, "set_temperature", args);
+        strategy.execute(deviceId, command("set_temperature"), args);
 
         verify(deviceClient).send(deviceId, "set_temperature", Map.of("temperature", 21.5));
     }
@@ -58,28 +58,32 @@ class SetTemperatureStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("temperature", 95);
         when(deviceClient.send(any(UUID.class), eq("set_temperature"), anyMap()))
-                .thenReturn(DeviceExecutionResult.success("ok"));
+                .thenReturn(new ExecutionOutcome(true, "ok"));
 
-        DeviceExecutionResult result = strategy.execute(deviceId, "set_temperature", args);
+        ExecutionOutcome result = strategy.execute(deviceId, command("set_temperature"), args);
 
         verify(deviceClient).send(deviceId, "set_temperature", args);
-        assertThat(result.outcome()).isEqualTo(ExecutionOutcome.SUCCESS);
+        assertThat(result.success()).isTrue();
     }
 
     @Test
     void rejectsNonNumericTemperatureWithoutCallingDevice() {
-        DeviceExecutionResult result =
-                strategy.execute(UUID.randomUUID(), "set_temperature", Map.of("temperature", "warm"));
+        ExecutionOutcome result =
+                strategy.execute(UUID.randomUUID(), command("set_temperature"), Map.of("temperature", "warm"));
 
-        assertThat(result.outcome()).isEqualTo(ExecutionOutcome.REJECTED);
+        assertThat(result.success()).isFalse();
         verifyNoInteractions(deviceClient);
     }
 
     @Test
     void rejectsMissingTemperatureWithoutCallingDevice() {
-        DeviceExecutionResult result = strategy.execute(UUID.randomUUID(), "set_temperature", Map.of());
+        ExecutionOutcome result = strategy.execute(UUID.randomUUID(), command("set_temperature"), Map.of());
 
-        assertThat(result.outcome()).isEqualTo(ExecutionOutcome.REJECTED);
+        assertThat(result.success()).isFalse();
         verifyNoInteractions(deviceClient);
+    }
+
+    private static Command command(String name) {
+        return new Command(UUID.randomUUID(), UUID.randomUUID(), name, null, null, null);
     }
 }

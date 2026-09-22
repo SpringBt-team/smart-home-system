@@ -1,7 +1,6 @@
 package server.executions.internal;
 
 import org.junit.jupiter.api.Test;
-import server.executions.DeviceExecutionResult;
 import server.executions.ExecutionOutcome;
 
 import java.util.Map;
@@ -17,9 +16,9 @@ class SimulatedDeviceClientTest {
     void recordsLastCommandAndArgsPerDevice() {
         UUID deviceId = UUID.randomUUID();
 
-        DeviceExecutionResult result = deviceClient.send(deviceId, "set_brightness", Map.of("brightness", 80));
+        ExecutionOutcome result = deviceClient.send(deviceId, "set_brightness", Map.of("brightness", 80));
 
-        assertThat(result.outcome()).isEqualTo(ExecutionOutcome.SUCCESS);
+        assertThat(result.success()).isTrue();
         assertThat(deviceClient.stateOf(deviceId))
                 .containsEntry("lastCommand", "set_brightness")
                 .containsEntry("brightness", 80);

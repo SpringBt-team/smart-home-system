@@ -1,8 +1,8 @@
 package server.executions.internal;
 
 import org.junit.jupiter.api.Test;
+import server.commands.Command;
 import server.executions.DeviceClient;
-import server.executions.DeviceExecutionResult;
 import server.executions.ExecutionOutcome;
 
 import java.util.Map;
@@ -31,11 +31,15 @@ class OpenStrategyTest {
     void sendsCommandToDevice() {
         UUID deviceId = UUID.randomUUID();
         when(deviceClient.send(any(UUID.class), eq("open"), anyMap()))
-                .thenReturn(DeviceExecutionResult.success("ok"));
+                .thenReturn(new ExecutionOutcome(true, "ok"));
 
-        DeviceExecutionResult result = strategy.execute(deviceId, "open", Map.of());
+        ExecutionOutcome result = strategy.execute(deviceId, command("open"), Map.of());
 
         verify(deviceClient).send(deviceId, "open", Map.of());
-        assertThat(result.outcome()).isEqualTo(ExecutionOutcome.SUCCESS);
+        assertThat(result.success()).isTrue();
+    }
+
+    private static Command command(String name) {
+        return new Command(UUID.randomUUID(), UUID.randomUUID(), name, null, null, null);
     }
 }
