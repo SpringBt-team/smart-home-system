@@ -25,11 +25,11 @@ class CommandArgsValidator {
         this.schemaRegistry = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12);
     }
 
-    void validate(String argsSchema, String argsJson) {
-        JsonNode args = readTree(argsJson);
-        Schema schema = schemaRegistry.getSchema(readTree(argsSchema));
+    void validate(String argsSchema, Map<String, Object> args) {
+        JsonNode argsNode = objectMapper.valueToTree(args);
+        Schema schema = schemaRegistry.getSchema(readSchema(argsSchema));
 
-        List<Error> errors = schema.validate(args);
+        List<Error> errors = schema.validate(argsNode);
         if (!errors.isEmpty()) {
             Map<String, String> errorsByField = new LinkedHashMap<>();
             for (Error error : errors) {
@@ -48,7 +48,7 @@ class CommandArgsValidator {
         return instanceLocation.startsWith("/") ? instanceLocation.substring(1) : instanceLocation;
     }
 
-    private JsonNode readTree(String json) {
+    private JsonNode readSchema(String json) {
         try {
             return objectMapper.readTree(json);
         } catch (JacksonException e) {
