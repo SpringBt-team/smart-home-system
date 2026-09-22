@@ -65,7 +65,7 @@ class CommandExecutionServiceImplTest {
         CommandExecutionStrategy strategy = mock(CommandExecutionStrategy.class);
         when(strategy.supports("set_brightness")).thenReturn(true);
         when(strategy.execute(eq(deviceId), eq(command), eq(args)))
-                .thenReturn(new ExecutionOutcome(true, "OK"));
+                .thenReturn(ExecutionOutcome.success("OK"));
 
         CommandExecutionServiceImpl service = new CommandExecutionServiceImpl(
                 commandService, commandArgsValidator, commandExecutionRepository, List.of(strategy), eventPublisher);
@@ -85,7 +85,7 @@ class CommandExecutionServiceImplTest {
         CommandExecutionStrategy strategy = mock(CommandExecutionStrategy.class);
         when(strategy.supports("set_brightness")).thenReturn(true);
         when(strategy.execute(eq(deviceId), eq(command), eq(args)))
-                .thenReturn(new ExecutionOutcome(false, "Device rejected the command"));
+                .thenReturn(ExecutionOutcome.rejected("Device rejected the command"));
 
         CommandExecutionServiceImpl service = new CommandExecutionServiceImpl(
                 commandService, commandArgsValidator, commandExecutionRepository, List.of(strategy), eventPublisher);

@@ -18,7 +18,7 @@ class SimulatedDeviceClient implements DeviceClient {
         Map<String, Object> state = statesByDeviceId.computeIfAbsent(deviceId, id -> new ConcurrentHashMap<>());
         state.put("lastCommand", commandName);
         state.putAll(args);
-        return new ExecutionOutcome(true, "Команду " + commandName + " виконано на пристрої " + deviceId);
+        return ExecutionOutcome.success("Команду " + commandName + " виконано на пристрої " + deviceId);
     }
 
     Map<String, Object> stateOf(UUID deviceId) {

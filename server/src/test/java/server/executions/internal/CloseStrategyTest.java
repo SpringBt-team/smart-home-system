@@ -31,12 +31,12 @@ class CloseStrategyTest {
     void sendsCommandToDevice() {
         UUID deviceId = UUID.randomUUID();
         when(deviceClient.send(any(UUID.class), eq("close"), anyMap()))
-                .thenReturn(new ExecutionOutcome(true, "ok"));
+                .thenReturn(ExecutionOutcome.success("ok"));
 
         ExecutionOutcome result = strategy.execute(deviceId, command("close"), Map.of());
 
         verify(deviceClient).send(deviceId, "close", Map.of());
-        assertThat(result.success()).isTrue();
+        assertThat(result.isSuccess()).isTrue();
     }
 
     private static Command command(String name) {

@@ -33,12 +33,12 @@ class SetBrightnessStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("brightness", 80);
         when(deviceClient.send(any(UUID.class), eq("set_brightness"), anyMap()))
-                .thenReturn(new ExecutionOutcome(true, "ok"));
+                .thenReturn(ExecutionOutcome.success("ok"));
 
         ExecutionOutcome result = strategy.execute(deviceId, command("set_brightness"), args);
 
         verify(deviceClient).send(deviceId, "set_brightness", args);
-        assertThat(result.success()).isTrue();
+        assertThat(result.isSuccess()).isTrue();
     }
 
     @Test
@@ -46,7 +46,7 @@ class SetBrightnessStrategyTest {
         ExecutionOutcome result =
                 strategy.execute(UUID.randomUUID(), command("set_brightness"), Map.of("brightness", 150));
 
-        assertThat(result.success()).isFalse();
+        assertThat(result.isSuccess()).isFalse();
         verifyNoInteractions(deviceClient);
     }
 
@@ -54,7 +54,7 @@ class SetBrightnessStrategyTest {
     void rejectsMissingBrightnessWithoutCallingDevice() {
         ExecutionOutcome result = strategy.execute(UUID.randomUUID(), command("set_brightness"), Map.of());
 
-        assertThat(result.success()).isFalse();
+        assertThat(result.isSuccess()).isFalse();
         verifyNoInteractions(deviceClient);
     }
 

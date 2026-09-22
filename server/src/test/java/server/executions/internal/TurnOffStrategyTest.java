@@ -31,12 +31,12 @@ class TurnOffStrategyTest {
     void sendsCommandToDevice() {
         UUID deviceId = UUID.randomUUID();
         when(deviceClient.send(any(UUID.class), eq("turn_off"), anyMap()))
-                .thenReturn(new ExecutionOutcome(true, "ok"));
+                .thenReturn(ExecutionOutcome.success("ok"));
 
         ExecutionOutcome result = strategy.execute(deviceId, command("turn_off"), Map.of());
 
         verify(deviceClient).send(deviceId, "turn_off", Map.of());
-        assertThat(result.success()).isTrue();
+        assertThat(result.isSuccess()).isTrue();
     }
 
     private static Command command(String name) {

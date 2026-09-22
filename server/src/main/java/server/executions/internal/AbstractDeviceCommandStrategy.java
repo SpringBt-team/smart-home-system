@@ -36,7 +36,7 @@ abstract class AbstractDeviceCommandStrategy implements CommandExecutionStrategy
     }
 
     private static Optional<ExecutionOutcome> rejected(String message) {
-        return Optional.of(new ExecutionOutcome(false, message));
+        return Optional.of(ExecutionOutcome.rejected(message));
     }
 
     static Optional<ExecutionOutcome> requireNumber(Map<String, Object> args, String key) {

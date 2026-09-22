@@ -33,12 +33,12 @@ class SetPositionStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("position", 40);
         when(deviceClient.send(any(UUID.class), eq("set_position"), anyMap()))
-                .thenReturn(new ExecutionOutcome(true, "ok"));
+                .thenReturn(ExecutionOutcome.success("ok"));
 
         ExecutionOutcome result = strategy.execute(deviceId, command("set_position"), args);
 
         verify(deviceClient).send(deviceId, "set_position", args);
-        assertThat(result.success()).isTrue();
+        assertThat(result.isSuccess()).isTrue();
     }
 
     @Test
@@ -46,7 +46,7 @@ class SetPositionStrategyTest {
         ExecutionOutcome result =
                 strategy.execute(UUID.randomUUID(), command("set_position"), Map.of("position", -1));
 
-        assertThat(result.success()).isFalse();
+        assertThat(result.isSuccess()).isFalse();
         verifyNoInteractions(deviceClient);
     }
 

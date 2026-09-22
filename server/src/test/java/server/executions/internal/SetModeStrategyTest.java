@@ -33,12 +33,12 @@ class SetModeStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("mode", "cool");
         when(deviceClient.send(any(UUID.class), eq("set_mode"), anyMap()))
-                .thenReturn(new ExecutionOutcome(true, "ok"));
+                .thenReturn(ExecutionOutcome.success("ok"));
 
         ExecutionOutcome result = strategy.execute(deviceId, command("set_mode"), args);
 
         verify(deviceClient).send(deviceId, "set_mode", args);
-        assertThat(result.success()).isTrue();
+        assertThat(result.isSuccess()).isTrue();
     }
 
     @Test
@@ -46,7 +46,7 @@ class SetModeStrategyTest {
         ExecutionOutcome result =
                 strategy.execute(UUID.randomUUID(), command("set_mode"), Map.of("mode", "turbo"));
 
-        assertThat(result.success()).isFalse();
+        assertThat(result.isSuccess()).isFalse();
         verifyNoInteractions(deviceClient);
     }
 

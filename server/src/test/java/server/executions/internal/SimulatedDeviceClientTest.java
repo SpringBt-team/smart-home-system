@@ -18,7 +18,7 @@ class SimulatedDeviceClientTest {
 
         ExecutionOutcome result = deviceClient.send(deviceId, "set_brightness", Map.of("brightness", 80));
 
-        assertThat(result.success()).isTrue();
+        assertThat(result.isSuccess()).isTrue();
         assertThat(deviceClient.stateOf(deviceId))
                 .containsEntry("lastCommand", "set_brightness")
                 .containsEntry("brightness", 80);

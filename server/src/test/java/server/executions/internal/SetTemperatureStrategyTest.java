@@ -33,12 +33,12 @@ class SetTemperatureStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("temperature", 21);
         when(deviceClient.send(any(UUID.class), eq("set_temperature"), anyMap()))
-                .thenReturn(new ExecutionOutcome(true, "ok"));
+                .thenReturn(ExecutionOutcome.success("ok"));
 
         ExecutionOutcome result = strategy.execute(deviceId, command("set_temperature"), args);
 
         verify(deviceClient).send(deviceId, "set_temperature", args);
-        assertThat(result.success()).isTrue();
+        assertThat(result.isSuccess()).isTrue();
     }
 
     @Test
@@ -46,7 +46,7 @@ class SetTemperatureStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("temperature", 21.5);
         when(deviceClient.send(any(UUID.class), eq("set_temperature"), anyMap()))
-                .thenReturn(new ExecutionOutcome(true, "ok"));
+                .thenReturn(ExecutionOutcome.success("ok"));
 
         strategy.execute(deviceId, command("set_temperature"), args);
 
@@ -58,12 +58,12 @@ class SetTemperatureStrategyTest {
         UUID deviceId = UUID.randomUUID();
         Map<String, Object> args = Map.of("temperature", 95);
         when(deviceClient.send(any(UUID.class), eq("set_temperature"), anyMap()))
-                .thenReturn(new ExecutionOutcome(true, "ok"));
+                .thenReturn(ExecutionOutcome.success("ok"));
 
         ExecutionOutcome result = strategy.execute(deviceId, command("set_temperature"), args);
 
         verify(deviceClient).send(deviceId, "set_temperature", args);
-        assertThat(result.success()).isTrue();
+        assertThat(result.isSuccess()).isTrue();
     }
 
     @Test
@@ -71,7 +71,7 @@ class SetTemperatureStrategyTest {
         ExecutionOutcome result =
                 strategy.execute(UUID.randomUUID(), command("set_temperature"), Map.of("temperature", "warm"));
 
-        assertThat(result.success()).isFalse();
+        assertThat(result.isSuccess()).isFalse();
         verifyNoInteractions(deviceClient);
     }
 
@@ -79,7 +79,7 @@ class SetTemperatureStrategyTest {
     void rejectsMissingTemperatureWithoutCallingDevice() {
         ExecutionOutcome result = strategy.execute(UUID.randomUUID(), command("set_temperature"), Map.of());
 
-        assertThat(result.success()).isFalse();
+        assertThat(result.isSuccess()).isFalse();
         verifyNoInteractions(deviceClient);
     }
 
