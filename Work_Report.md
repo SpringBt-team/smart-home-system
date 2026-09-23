@@ -26,6 +26,17 @@
     - Проведено рев'ю коду команди, знайдено й виправлено кілька структурних неузгодженостей
     - Написано Mockito-тести без підняття Spring-контексту для всього нового функціоналу CommandExecution
 - Олійник Діана:
+    - Додано інтерфейс `DeviceRepository` з методами `save` та `findById`.
+    - Додано клас `DeviceRepositoryImpl`, що використовує `ConcurrentHashMap` для зберігання даних у пам'яті.
+    - Реалізовано `DeviceService.create(name, type)` — створює пристрій із новим `id`, `connectionToken` і `createdAt`, зберігає його через репозиторій.
+    - Реалізовано `DeviceService.findById(id)` — повертає пристрій або кидає `DeviceNotFoundException`, якщо його не знайдено.
+    - Додано модульні тести `DeviceServiceImplTest` (з `DeviceRepository`, замоканим через Mockito):
+      - успішне створення пристрою;
+      - успішний пошук існуючого пристрою;
+      - `DeviceNotFoundException`, якщо пристрою немає.
+    - Реалізовано `CommandService.create(deviceId, name, argsSchema, requiredRole)` та `findByDeviceIdAndCommandId(deviceId, commandId)`
+    - Додано `CommandRepository` (інтерфейс: `save`, `findById`, `findByDeviceIdAndCommandId`) і `CommandRepositoryImpl` із використанням `ConcurrentHashMap`.
+    - Модульні тести `CommandServiceImplTest` (із моками `DeviceService` і `CommandRepository` )
 - Забіяка Денис:
 	- Реалізовано стратегії виконання команд: окремий клас на кожну команду — `turn_on`, `turn_off`, `set_brightness`, `set_temperature`, `set_mode`, `open`, `close`, `set_position`, зі спільною частиною та валідацією аргументів в `AbstractDeviceCommandStrategy`
 	- Виділено транспорт до пристрою в інтерфейс `DeviceClient` і додано мінімальну синхронну in-memory реалізацію `SimulatedDeviceClient`, що тримає стан кожного пристрою окремо
