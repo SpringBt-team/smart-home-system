@@ -28,3 +28,5 @@
 - Олійник Діана:
 - Забіяка Денис:
 - Мошенський Олег:
+    - Додав окремий пакет server.audit з класом CommandExecutionAuditListener — @component, публічний клас і метод, що слухає CommandExecutedEvent (публічний тип із server.executions) через анотацію @ApplicationModuleListener і пише запис у лог застосунку через SLF4J: id виконання команди та фінальний статус. Модуль audit лише імпортує подію й нічого не знає про внутрішню логіку виконання команди — зв'язок відбувається виключно через подію, без прямої залежності між модулями.
+    - Реалізував UserService.register(email, rawPassword, name) та findById(id), а також AuthService.login(email, rawPassword). Додав UserRepository (інтерфейс: save, findById, findByEmail, existsByEmail) і UserRepositoryImpl — мінімальна реалізація на ConcurrentHashMap, без реальної БД. Конструкторна ін'єкція UserRepository в сервіс.
