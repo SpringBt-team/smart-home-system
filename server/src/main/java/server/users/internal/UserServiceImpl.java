@@ -9,11 +9,11 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 @Service
-class userServiceImpl implements UserService{
+class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    userServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }

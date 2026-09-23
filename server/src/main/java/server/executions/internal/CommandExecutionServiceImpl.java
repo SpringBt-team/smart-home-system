@@ -11,10 +11,8 @@ import server.executions.CommandExecutionService;
 import server.executions.CommandExecutionStrategy;
 import server.executions.ExecutionOutcome;
 import server.executions.ExecutionStatus;
-import server.executions.UnsupportedCommandException;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,19 +22,19 @@ class CommandExecutionServiceImpl implements CommandExecutionService {
     private final CommandService commandService;
     private final CommandArgsValidator commandArgsValidator;
     private final CommandExecutionRepository commandExecutionRepository;
-    private final List<CommandExecutionStrategy> strategies;
+    private final CommandExecutionStrategyResolver strategyResolver;
     private final ApplicationEventPublisher eventPublisher;
 
     CommandExecutionServiceImpl(
             CommandService commandService,
             CommandArgsValidator commandArgsValidator,
             CommandExecutionRepository commandExecutionRepository,
-            List<CommandExecutionStrategy> strategies,
+            CommandExecutionStrategyResolver strategyResolver,
             ApplicationEventPublisher eventPublisher) {
         this.commandService = commandService;
         this.commandArgsValidator = commandArgsValidator;
         this.commandExecutionRepository = commandExecutionRepository;
-        this.strategies = strategies;
+        this.strategyResolver = strategyResolver;
         this.eventPublisher = eventPublisher;
     }
 
@@ -45,10 +43,7 @@ class CommandExecutionServiceImpl implements CommandExecutionService {
         Command command = commandService.findByDeviceIdAndCommandId(deviceId, commandId);
         commandArgsValidator.validate(command.argsSchema(), args);
 
-        CommandExecutionStrategy strategy = strategies.stream()
-                .filter(s -> s.supports(command.name()))
-                .findFirst()
-                .orElseThrow(() -> new UnsupportedCommandException(command.name()));
+        CommandExecutionStrategy strategy = strategyResolver.resolve(command.name());
 
         CommandExecution execution = new CommandExecution(
                 UUID.randomUUID(), deviceId, commandId, args, ExecutionStatus.PENDING, Instant.now());
