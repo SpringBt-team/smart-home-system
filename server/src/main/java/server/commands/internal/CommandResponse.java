@@ -1,7 +1,6 @@
 package server.commands.internal;
 import server.commands.Command;
 import java.time.Instant;
-import java.util.Map;
 import java.util.UUID;
 
 record CommandResponse(

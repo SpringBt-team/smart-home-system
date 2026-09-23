@@ -2,7 +2,6 @@ package server.commands.internal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import server.commands.RequiredRole;
-import java.util.Map;
 
 record CreateCommandRequest(
         @NotBlank(message = "Назва команди є обов'язковою")
