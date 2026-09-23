@@ -27,4 +27,9 @@
     - Написано Mockito-тести без підняття Spring-контексту для всього нового функціоналу CommandExecution
 - Олійник Діана:
 - Забіяка Денис:
+	- Реалізовано стратегії виконання команд: окремий клас на кожну команду — `turn_on`, `turn_off`, `set_brightness`, `set_temperature`, `set_mode`, `open`, `close`, `set_position`, зі спільною частиною та валідацією аргументів в `AbstractDeviceCommandStrategy`
+	- Виділено транспорт до пристрою в інтерфейс `DeviceClient` і додано мінімальну синхронну in-memory реалізацію `SimulatedDeviceClient`, що тримає стан кожного пристрою окремо
+	- Додано `CommandExecutionStrategyResolver` — вибір стратегії з колекції `List<CommandExecutionStrategy>` без `@Qualifier`; використовується `CommandExecutionServiceImpl`
+	- Перевірку діапазону `set_temperature` винесено з коду в `argsSchema` команди, що усунуло зрізання дробових значень
+	- Написано Mockito-тести на кожну стратегію окремо з мокнутим `DeviceClient`
 - Мошенський Олег:
