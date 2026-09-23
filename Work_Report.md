@@ -1,4 +1,4 @@
-# Звіт про виконання Групового завдання 2
+# Звіт за 2 групове завдання
 - Малій Олександра:
     - Реалізовано контролер сутності User, що дозволяє реєструвати користувача та отримувати профіль за id, та авторизація у TokenController
     - Реалізовано ендпоінт виконання команди на пристрої (`POST /devices/{deviceId}/commands/{commandId}/executions`)
@@ -17,3 +17,14 @@
     - Створив DTO-контракти (`CreateCommandRequest`, `CommandResponse`) на базі Java Records
     - Налаштував Jakarta Validation (`@NotBlank`, `@NotNull`) для перевірки вхідних даних на рівні контролера
     - Написав тести для веб-шару через MockMvc, повністю покривши успішний сценарій (201 Created) та помилки валідації/відсутності ресурсу (400, 404)
+
+# Звіт за 3 групове завдання
+- Малій Олександра:
+    - Імплементовано сервісний шар для `CommandExecution`: формальна модель переходів станів (`ExecutionStatus`, `transitionTo`, `InvalidStateTransitionException`) та `CommandExecutionServiceImpl`, що оркеструє виконання команди від пошуку до публікації події `CommandExecutedEvent`
+    - Визначено контракти для Strategy-патерна (`CommandExecutionStrategy`, `ExecutionOutcome`) та `CommandExecutionRepository`, без прив'язки до конкретних реалізацій
+    - Доопрацьовано обробку помилок (`GlobalExceptionHandler`) та документацію (`README.md`)
+    - Проведено рев'ю коду команди, знайдено й виправлено кілька структурних неузгодженостей
+    - Написано Mockito-тести без підняття Spring-контексту для всього нового функціоналу CommandExecution
+- Олійник Діана:
+- Забіяка Денис:
+- Мошенський Олег:
