@@ -24,6 +24,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
     testImplementation 'com.tngtech.archunit:archunit-junit5:1.5.0'
+    implementation 'org.springframework.modulith:spring-modulith-events-api'
 }
 
 tasks.withType(Test).configureEach {
