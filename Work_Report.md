@@ -27,6 +27,11 @@
     - Написано Mockito-тести без підняття Spring-контексту для всього нового функціоналу CommandExecution
 - Олійник Діана:
 - Забіяка Денис:
+	- Реалізовано стратегії виконання команд: окремий клас на кожну команду — `turn_on`, `turn_off`, `set_brightness`, `set_temperature`, `set_mode`, `open`, `close`, `set_position`, зі спільною частиною та валідацією аргументів в `AbstractDeviceCommandStrategy`
+	- Виділено транспорт до пристрою в інтерфейс `DeviceClient` і додано мінімальну синхронну in-memory реалізацію `SimulatedDeviceClient`, що тримає стан кожного пристрою окремо
+	- Додано `CommandExecutionStrategyResolver` — вибір стратегії з колекції `List<CommandExecutionStrategy>` без `@Qualifier`; використовується `CommandExecutionServiceImpl`
+	- Перевірку діапазону `set_temperature` винесено з коду в `argsSchema` команди, що усунуло зрізання дробових значень
+	- Написано Mockito-тести на кожну стратегію окремо з мокнутим `DeviceClient`
 - Мошенський Олег:
     - Додав окремий пакет server.audit з класом CommandExecutionAuditListener — @component, публічний клас і метод, що слухає CommandExecutedEvent (публічний тип із server.executions) через анотацію @ApplicationModuleListener і пише запис у лог застосунку через SLF4J: id виконання команди та фінальний статус. Модуль audit лише імпортує подію й нічого не знає про внутрішню логіку виконання команди — зв'язок відбувається виключно через подію, без прямої залежності між модулями.
     - Реалізував UserService.register(email, rawPassword, name) та findById(id), а також AuthService.login(email, rawPassword). Додав UserRepository (інтерфейс: save, findById, findByEmail, existsByEmail) і UserRepositoryImpl — мінімальна реалізація на ConcurrentHashMap, без реальної БД. Конструкторна ін'єкція UserRepository в сервіс.
