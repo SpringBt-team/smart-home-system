@@ -23,6 +23,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-webmvc-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
+    implementation 'org.springframework.modulith:spring-modulith-events-api'
 }
 
 tasks.withType(Test).configureEach {
