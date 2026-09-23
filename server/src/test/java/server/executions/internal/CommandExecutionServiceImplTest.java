@@ -68,7 +68,8 @@ class CommandExecutionServiceImplTest {
                 .thenReturn(ExecutionOutcome.success("OK"));
 
         CommandExecutionServiceImpl service = new CommandExecutionServiceImpl(
-                commandService, commandArgsValidator, commandExecutionRepository, List.of(strategy), eventPublisher);
+                commandService, commandArgsValidator, commandExecutionRepository,
+                new CommandExecutionStrategyResolver(List.of(strategy)), eventPublisher);
 
         CommandExecution execution = service.execute(deviceId, commandId, args);
 
@@ -88,7 +89,8 @@ class CommandExecutionServiceImplTest {
                 .thenReturn(ExecutionOutcome.rejected("Device rejected the command"));
 
         CommandExecutionServiceImpl service = new CommandExecutionServiceImpl(
-                commandService, commandArgsValidator, commandExecutionRepository, List.of(strategy), eventPublisher);
+                commandService, commandArgsValidator, commandExecutionRepository,
+                new CommandExecutionStrategyResolver(List.of(strategy)), eventPublisher);
 
         CommandExecution execution = service.execute(deviceId, commandId, args);
 
@@ -104,7 +106,8 @@ class CommandExecutionServiceImplTest {
         when(strategy.supports("set_brightness")).thenReturn(false);
 
         CommandExecutionServiceImpl service = new CommandExecutionServiceImpl(
-                commandService, commandArgsValidator, commandExecutionRepository, List.of(strategy), eventPublisher);
+                commandService, commandArgsValidator, commandExecutionRepository,
+                new CommandExecutionStrategyResolver(List.of(strategy)), eventPublisher);
 
         assertThrows(UnsupportedCommandException.class, () -> service.execute(deviceId, commandId, args));
 

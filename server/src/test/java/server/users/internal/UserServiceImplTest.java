@@ -27,11 +27,11 @@ class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
-    private userServiceImpl userService;
+    private UserServiceImpl userService;
 
     @BeforeEach
     void setUp() {
-        userService = new userServiceImpl(userRepository, passwordEncoder);
+        userService = new UserServiceImpl(userRepository, passwordEncoder);
     }
 
     @Test

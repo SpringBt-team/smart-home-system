@@ -1,6 +1,6 @@
 package server.executions.internal;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import server.executions.CommandExecution;
 import server.executions.CommandExecutionRepository;
 
@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
+@Repository
 class CommandExecutionRepositoryImpl implements CommandExecutionRepository {
 
     private final Map<UUID, CommandExecution> executions = new ConcurrentHashMap<>();
