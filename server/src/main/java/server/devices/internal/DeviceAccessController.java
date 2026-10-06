@@ -1,4 +1,11 @@
 package server.devices.internal;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import server.openapi.BadRequestResponse;
+import server.openapi.ConflictResponse;
+import server.openapi.NotFoundResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@Tag(name = "Доступи до пристроїв", description = "Надання, відкликання та перегляд доступів користувачів до пристроїв")
 class DeviceAccessController {
 
     private final DeviceAccessService accessService;
@@ -21,6 +29,11 @@ class DeviceAccessController {
         this.accessService = accessService;
     }
 
+    @Operation(summary = "Надати доступ до пристрою", description = "Надає користувачеві (за email) роль OWNER або GUEST на пристрої.")
+    @ApiResponse(responseCode = "201", description = "Доступ надано")
+    @BadRequestResponse
+    @NotFoundResponse
+    @ConflictResponse
     @PostMapping("/devices/{id}/accesses")
     ResponseEntity<DeviceAccessResponse> grant(
             @PathVariable UUID id,
@@ -36,6 +49,9 @@ class DeviceAccessController {
                 .body(DeviceAccessResponse.from(access));
     }
 
+    @Operation(summary = "Відкликати доступ", description = "Прибирає доступ користувача до пристрою.")
+    @ApiResponse(responseCode = "204", description = "Доступ відкликано")
+    @NotFoundResponse
     @DeleteMapping("/devices/{id}/accesses/{userId}")
     ResponseEntity<Void> revoke(
             @PathVariable UUID id,
@@ -44,6 +60,9 @@ class DeviceAccessController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Переглянути доступи пристрою", description = "Повертає всіх користувачів, які мають доступ до пристрою, з їхніми ролями.")
+    @ApiResponse(responseCode = "200", description = "Список доступів")
+    @NotFoundResponse
     @GetMapping("/devices/{id}/accesses")
     ResponseEntity<List<DeviceAccessResponse>> findByDevice(
             @PathVariable UUID id) {
@@ -54,6 +73,8 @@ class DeviceAccessController {
         return ResponseEntity.ok(responses);
     }
 
+    @Operation(summary = "Переглянути пристрої користувача", description = "Повертає доступи користувача разом з пристроями, до яких він має доступ.")
+    @ApiResponse(responseCode = "200", description = "Список доступів користувача")
     @GetMapping("/users/{userId}/devices")
     ResponseEntity<List<DeviceAccessResponse>> findByUser(
             @PathVariable UUID userId) {
