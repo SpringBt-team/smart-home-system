@@ -1,6 +1,7 @@
 package server.devices.internal;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import server.openapi.BadRequestResponse;
@@ -36,8 +37,8 @@ class DeviceAccessController {
     @ConflictResponse
     @PostMapping("/devices/{id}/accesses")
     ResponseEntity<DeviceAccessResponse> grant(
-            @PathVariable UUID id,
-            @Valid @RequestBody GrantAccessRequest request) {
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Email користувача, роль і хто надає доступ") @Valid @RequestBody GrantAccessRequest request) {
         DeviceAccess access = accessService.grant(
                 id,
                 request.email(),
@@ -54,8 +55,8 @@ class DeviceAccessController {
     @NotFoundResponse
     @DeleteMapping("/devices/{id}/accesses/{userId}")
     ResponseEntity<Void> revoke(
-            @PathVariable UUID id,
-            @PathVariable UUID userId) {
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID id,
+            @Parameter(description = "Ідентифікатор користувача, якому відкликається доступ", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID userId) {
         accessService.revoke(id, userId);
         return ResponseEntity.noContent().build();
     }
@@ -65,7 +66,7 @@ class DeviceAccessController {
     @NotFoundResponse
     @GetMapping("/devices/{id}/accesses")
     ResponseEntity<List<DeviceAccessResponse>> findByDevice(
-            @PathVariable UUID id) {
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID id) {
         List<DeviceAccessResponse> responses =
                 accessService.findByDevice(id).stream()
                         .map(DeviceAccessResponse::from)
@@ -77,7 +78,7 @@ class DeviceAccessController {
     @ApiResponse(responseCode = "200", description = "Список доступів користувача")
     @GetMapping("/users/{userId}/devices")
     ResponseEntity<List<DeviceAccessResponse>> findByUser(
-            @PathVariable UUID userId) {
+            @Parameter(description = "Ідентифікатор користувача", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID userId) {
         List<DeviceAccessResponse> responses =
                 accessService.findByUser(userId).stream()
                         .map(DeviceAccessResponse::from)

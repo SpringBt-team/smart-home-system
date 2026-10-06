@@ -31,7 +31,8 @@ class TokenController {
     @BadRequestResponse
     @UnauthorizedResponse
     @PostMapping
-    ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+    ResponseEntity<TokenResponse> login(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Email і пароль користувача") @Valid @RequestBody LoginRequest request) {
         IssuedToken issuedToken = authService.login(request.email(), request.password());
         return ResponseEntity.ok(TokenResponse.from(issuedToken));
     }

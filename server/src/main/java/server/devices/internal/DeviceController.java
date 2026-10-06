@@ -2,7 +2,6 @@ package server.devices.internal;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import server.openapi.BadRequestResponse;
@@ -40,25 +39,24 @@ class DeviceController {
     }
 
     @Operation(summary = "Створити пристрій", description = "Створює пристрій. Якщо передано X-User-Id, цей користувач стає його власником (OWNER).")
-    @Parameter(name = "X-User-Id", in = ParameterIn.HEADER, description = "Тимчасова ідентифікація користувача (UUID) до впровадження Security", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
     @ApiResponse(responseCode = "201", description = "Пристрій створено; заголовок Location містить адресу ресурсу")
     @BadRequestResponse
     @NotFoundResponse
     @PostMapping
     ResponseEntity<DeviceResponse> create(
-            @RequestHeader(name = "X-User-Id", required = false) UUID userId,
-            @Valid @RequestBody CreateDeviceRequest request) {
+            @Parameter(description = "Тимчасова ідентифікація користувача (UUID) до впровадження Security; необов'язковий", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @RequestHeader(name = "X-User-Id", required = false) UUID userId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Назва й тип нового пристрою") @Valid @RequestBody CreateDeviceRequest request) {
         Device device = deviceService.create(request.name(), request.type(), userId);
         return ResponseEntity.created(URI.create("/devices/" + device.getId()))
                 .body(DeviceResponse.from(device));
     }
 
     @Operation(summary = "Отримати список пристроїв", description = "Повертає всі пристрої разом із доступами; параметр type фільтрує за типом.")
-    @Parameter(name = "type", description = "Тип пристрою: LAMP, KETTLE, AC, COFFEE_MACHINE, BLINDS", example = "LAMP")
     @ApiResponse(responseCode = "200", description = "Список пристроїв")
     @BadRequestResponse
     @GetMapping
-    List<DeviceResponse> findAll(@RequestParam(required = false) DeviceType type) {
+    List<DeviceResponse> findAll(
+            @Parameter(description = "Тип пристрою для фільтрації: LAMP, KETTLE, AC, COFFEE_MACHINE або BLINDS; без нього повертаються всі", example = "LAMP") @RequestParam(required = false) DeviceType type) {
         return deviceService.findAll(type).stream().map(DeviceResponse::from).toList();
     }
 
@@ -67,7 +65,8 @@ class DeviceController {
     @BadRequestResponse
     @NotFoundResponse
     @GetMapping("/{id}")
-    DeviceResponse getById(@PathVariable UUID id) {
+    DeviceResponse getById(
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID id) {
         return DeviceResponse.from(deviceService.getWithAccesses(id));
     }
 
@@ -76,7 +75,9 @@ class DeviceController {
     @BadRequestResponse
     @NotFoundResponse
     @PutMapping("/{id}")
-    DeviceResponse rename(@PathVariable UUID id, @Valid @RequestBody RenameDeviceRequest request) {
+    DeviceResponse rename(
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Нова назва пристрою") @Valid @RequestBody RenameDeviceRequest request) {
         return DeviceResponse.from(deviceService.rename(id, request.name()));
     }
 
@@ -84,7 +85,8 @@ class DeviceController {
     @ApiResponse(responseCode = "204", description = "Пристрій видалено")
     @NotFoundResponse
     @DeleteMapping("/{id}")
-    ResponseEntity<Void> delete(@PathVariable UUID id) {
+    ResponseEntity<Void> delete(
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID id) {
         deviceService.delete(id);
         return ResponseEntity.noContent().build();
     }

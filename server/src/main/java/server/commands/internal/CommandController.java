@@ -33,8 +33,8 @@ public class CommandController {
     @ConflictResponse
     @PostMapping
     ResponseEntity<CommandResponse> create(
-        @PathVariable UUID deviceId,
-        @Valid @RequestBody CreateCommandRequest request) {
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID deviceId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Назва команди, схема аргументів і роль доступу") @Valid @RequestBody CreateCommandRequest request) {
             Command command = commandService.create(
             deviceId, request.name(), request.argsSchema(), request.requiredRole());
             return ResponseEntity
@@ -43,12 +43,13 @@ public class CommandController {
     }
 
     @Operation(summary = "Отримати команди пристрою", description = "Повертає команди пристрою, відсортовані за назвою; параметр requiredRole фільтрує за роллю.")
-    @Parameter(name = "requiredRole", description = "Роль, якій доступна команда: OWNER або GUEST", example = "GUEST")
     @ApiResponse(responseCode = "200", description = "Список команд")
     @BadRequestResponse
     @NotFoundResponse
     @GetMapping
-    List<CommandResponse> get(@PathVariable UUID deviceId, @RequestParam(required = false) RequiredRole requiredRole) {
+    List<CommandResponse> get(
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID deviceId,
+            @Parameter(description = "Роль, якій доступна команда: OWNER або GUEST; без неї повертаються всі команди", example = "GUEST") @RequestParam(required = false) RequiredRole requiredRole) {
         return commandService.findAllByDevice(deviceId, requiredRole).stream().map(CommandResponse::from).toList();
     }
 
@@ -57,7 +58,10 @@ public class CommandController {
     @BadRequestResponse
     @NotFoundResponse
     @PutMapping("/{commandId}")
-    ResponseEntity<Void> update( @PathVariable UUID deviceId, @PathVariable UUID commandId, @Valid  @RequestBody UpdateCommandRequest request) {
+    ResponseEntity<Void> update(
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID deviceId,
+            @Parameter(description = "Ідентифікатор команди", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID commandId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Нова схема аргументів і роль доступу") @Valid @RequestBody UpdateCommandRequest request) {
         commandService.update(deviceId, commandId, request.argsSchema(), request.requiredRole());
 
         return ResponseEntity.noContent().build();
@@ -67,7 +71,9 @@ public class CommandController {
     @ApiResponse(responseCode = "204", description = "Команду видалено")
     @NotFoundResponse
     @DeleteMapping("/{commandId}")
-    ResponseEntity<Void> delete(@PathVariable UUID deviceId, @PathVariable UUID commandId) {
+    ResponseEntity<Void> delete(
+            @Parameter(description = "Ідентифікатор пристрою", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID deviceId,
+            @Parameter(description = "Ідентифікатор команди", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6") @PathVariable UUID commandId) {
         commandService.delete(deviceId, commandId);
         return ResponseEntity.noContent().build();
     }
