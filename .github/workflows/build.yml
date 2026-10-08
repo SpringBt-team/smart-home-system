@@ -1,4 +1,4 @@
-name: Build
+name: Build and API regression
 
 on:
   push:
@@ -20,3 +20,41 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew build
+
+  api-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build server jar
+        run: |
+          chmod +x gradlew
+          ./gradlew :server:bootJar
+      - name: Start server
+        run: |
+          JAR=$(ls server/build/libs/*.jar | grep -v -- '-plain.jar')
+          java -jar "$JAR" > server.log 2>&1 &
+      - name: Wait for server
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080/devices > /dev/null; then
+              echo "Server is up after $i s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not start within 60 s"
+          cat server.log
+          exit 1
+      - name: Run Newman
+        working-directory: postman
+        run: npx newman run collection.json -e env.json
