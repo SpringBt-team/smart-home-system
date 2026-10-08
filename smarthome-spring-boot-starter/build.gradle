@@ -1,0 +1,11 @@
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '4.1.1'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+tasks.named('bootJar') { enabled = false }
+dependencies {
+    api project(':smarthome-spring-boot-autoconfigure')
+    api 'org.springframework.boot:spring-boot-starter'
+    api 'org.springframework.boot:spring-boot-starter-validation'
+}
