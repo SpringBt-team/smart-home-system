@@ -4,14 +4,20 @@ import server.devices.CommandExecutionNotFoundException;
 import server.devices.DeviceAccessNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import server.auth.InvalidCredentialsException;
 import server.commands.CommandNotFoundException;
@@ -28,7 +34,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
-class GlobalExceptionHandler {
+class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
@@ -91,8 +97,9 @@ class GlobalExceptionHandler {
         return problemDetail(HttpStatus.BAD_REQUEST, "Команда не підтримується", ex.getMessage(), ex);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         ProblemDetail problemDetail = problemDetail(HttpStatus.BAD_REQUEST, "Помилка валідації вхідних даних",
                 "Один або декілька параметрів не пройшли валідацію", ex);
 
@@ -102,30 +109,42 @@ class GlobalExceptionHandler {
                         FieldError::getDefaultMessage,
                         (first, second) -> first));
         problemDetail.setProperty("errors", errors);
-        return problemDetail;
+        return handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    ProblemDetail handleUnreadableBody(HttpMessageNotReadableException ex) {
-        return problemDetail(HttpStatus.BAD_REQUEST, "Некоректне тіло запиту",
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ProblemDetail problemDetail = problemDetail(HttpStatus.BAD_REQUEST, "Некоректне тіло запиту",
                 "Тіло запиту не вдалося розібрати як JSON", ex);
+        return handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        return problemDetail(HttpStatus.BAD_REQUEST, "Некоректний параметр запиту",
-                "Параметр '" + ex.getName() + "' має неправильний формат", ex);
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex,
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        String parameter = ex instanceof MethodArgumentTypeMismatchException mismatch
+                ? mismatch.getName()
+                : ex.getPropertyName();
+        ProblemDetail problemDetail = problemDetail(HttpStatus.BAD_REQUEST, "Некоректний параметр запиту",
+                "Параметр '" + parameter + "' має неправильний формат", ex);
+        return handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    ProblemDetail handleNoResourceFound(NoResourceFoundException ex) {
-        return problemDetail(HttpStatus.NOT_FOUND, "Ресурс не знайдено",
+    @Override
+    protected ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException ex,
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ProblemDetail problemDetail = problemDetail(HttpStatus.NOT_FOUND, "Ресурс не знайдено",
                 "Маршрут '" + ex.getResourcePath() + "' не існує", ex);
+        return handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    ProblemDetail handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-        return problemDetail(HttpStatus.METHOD_NOT_ALLOWED, "Метод не підтримується", ex.getMessage(), ex);
+    @Override
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex,
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ProblemDetail problemDetail = problemDetail(HttpStatus.METHOD_NOT_ALLOWED, "Метод не підтримується",
+                ex.getMessage(), ex);
+        return handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 
     @ExceptionHandler(Exception.class)
