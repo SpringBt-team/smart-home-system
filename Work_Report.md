@@ -79,3 +79,27 @@
 	- Реалізовано CRUD команд: `GET /devices/{id}/commands?requiredRole=`, `PUT` і `DELETE /devices/{id}/commands/{commandId}`; 404 для неіснуючого пристрою чи чужої команди, 409 на дублікат назви (включно з одночасними запитами)
 	- Оновлено README: таблиця ендпоінтів команд
 	- Написано `@DataJpaTest` для репозиторію (сортування, фільтр за роллю, унікальність), Mockito- і MockMvc-тести для сервісу та контролера
+
+# Звіт за 5 групове завдання
+- Малій Олександра:
+    - Підключила SpringDoc (OpenAPI) до серверного модуля та додала `OpenApiConfig` з описом API (назва, версія, опис, локальний сервер)
+    - Задокументувала всі контролери в Swagger UI: групи через `@Tag`, опис кожного ендпоінта через `@Operation`, реальні коди відповідей через `@ApiResponses`, опис параметрів (path-змінні, query-параметри, заголовок `X-User-Id`) і тіл запитів
+    - Додала `@Schema` з описом і прикладами (`example`) до всіх DTO-контрактів та перелічила допустимі значення enum-ів
+    - Описала помилки єдиною схемою `ProblemDetail` (RFC 9457)
+    - Змінила лише анотації й конфігурацію: шляхи, методи, коди та поля API лишились без змін, наявні тести не чіпала
+- Олійник Діана:
+    - Створила `logback-spring.xml` з `ConsoleAppender` та `RollingFileAppender` (`SizeAndTimeBasedRollingPolicy`): файл `logs/application.log`, архівація старих файлів у `.log.gz`, ліміти за розміром, кількістю днів і загальним обсягом; каталог `logs/` додано до `.gitignore`
+    - Реалізувала маскування конфіденційних даних у пакеті `server.logging`: `MaskingMessageConverter` замінює значення полів `password`, `passwordHash`, `token`, `connectionToken` на `***` (формати `ключ=значення`, `ключ: значення` та JSON), підключений у патерні як `%maskedMsg`; звичайний текст, UUID і числа не змінюються
+    - Написала тести `MaskingMessageConverterTest` для перевірки маскування
+    - Провела аудит блоків `catch` у сервісах (`CommandServiceImpl`, `CommandArgsValidator`) на відсутність проковтнутих винятків; результат наведено в описі PR
+- Забіяка Денис:
+    - Підготував колекцію Postman `postman/collection.json` (формат v2.1) та оточення `postman/env.json` зі змінними `baseUrl`, `email`, `userId`, `deviceId`, `commandId`, `executionId`
+    - Реалізував наскрізний сценарій із 5 кроків: реєстрація користувача, створення пристрою, створення команди, виконання команди, перегляд журналу виконань; ідентифікатори зберігаються між запитами через `pm.environment.set`
+    - Додав перевірки статусів і даних відповіді в кожному запиті та генерацію унікального `email` у pre-request скрипті, щоб повторні запуски не давали `409`
+    - Налаштував запуск через Newman (`npx newman run collection.json -e env.json`) та додав у `.github/workflows/build.yml` job `api-tests` (після `build`), який збирає й запускає сервіс, чекає на його готовність і виконує колекцію; помилка будь-якої перевірки робить job червоним
+- Мошенський Олег:
+    - Створив спільний стартер у двох Gradle-модулях: `smarthome-spring-boot-autoconfigure` (код, властивості, `AutoConfiguration.imports`) та порожній `smarthome-spring-boot-starter` (лише залежності); підключив модулі в `settings.gradle` та стартер у `server/build.gradle`
+    - Реалізував інтерфейс `NotificationService`, реалізацію за замовчуванням `LoggingNotificationService` (запис у лог через SLF4J) та `NotificationAutoConfiguration`: бін вмикається прапорцем `smarthome.notifications.enabled` (`@ConditionalOnProperty`, `matchIfMissing = true`) і замінюється власним бінем (`@ConditionalOnMissingBean`)
+    - Додав типізовані налаштування `NotificationProperties` (Java Record, `@ConfigurationProperties`, `@Validated`, `@NotBlank` для `sender`)
+    - Налаштував ієрархію налаштувань і профілі середовищ: базове значення в `application.properties`, перекриття в `application-dev.properties` та `application-prod.properties`
+    - Написав тести автоконфігурації через `ApplicationContextRunner`: бін є при `enabled=true`, відсутній при `enabled=false`, є за відсутності властивості, замінюється власним бінем, значення `sender` за замовчуванням
