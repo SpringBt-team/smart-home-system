@@ -144,12 +144,12 @@
 - Мошенський Олег:
     - Написав `WebSecurityTest`: 13 тестів безпеки сторінок на справжньому ланцюгу
     - Підготував знімки сторінок для різних ролей, звіт `reports/Report_Lab7.md` і перелік сторінок у README
-# Звіт за 10 групове завдання
-Докладний звіт зі структурою тестів за рівнями та знімками браузерних тестів: `reports/Report_Lab10.md`.
+# Звіт за 8 групове завдання
+Докладний звіт зі структурою тестів за рівнями та знімками браузерних тестів: `reports/Report_Lab8.md`.
 - Малій Олександра:
     - Підключила Testcontainers (PostgreSQL у Docker замість H2), створила спільні анотації `@IntegrationTest` та `@E2ETest`, `SeedData` і `reset-data.sql`, перевела наявні `@SpringBootTest` та `@DataJpaTest` на PostgreSQL
     - Відокремила end-to-end тести завданням Gradle `e2eTest`, додала `installPlaywright` і крок встановлення браузера в CI, закріпила воркфлоу на `ubuntu-24.04`
-    - Написала браузерні тести Playwright з Page Object (`ThymeleafUiE2EIT`) та звіт `reports/Report_Lab10.md`
+    - Написала браузерні тести Playwright з Page Object (`ThymeleafUiE2EIT`) та звіт `reports/Report_Lab8.md`
 - Олійник Діана:
     - Написала інтеграційні CRUD-тести з перевіркою таблиць через `JdbcClient`: `UserCrudTest`, `DeviceCrudTest`, `DeviceAccessCrudTest`, `CommandCrudTest`, `CommandExecutionCrudTest`
 - Тест ключового сценарію з ролями `DeviceControlFlowTest` і REST end-to-end тест `ApiE2EIT` на `RestTestClient` (PR #135 і #134, автор SquidBow)
