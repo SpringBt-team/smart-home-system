@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
@@ -16,6 +16,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '25'
+      - name: Install Playwright browser
+        run: |
+          chmod +x gradlew
+          ./gradlew :server:installPlaywright
       - name: Build with Gradle
         run: |
           chmod +x gradlew
@@ -23,7 +27,7 @@ jobs:
 
   api-tests:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
