@@ -130,7 +130,7 @@
     - Додав `@PreAuthorize` на створення, зміну й видалення команд та на надання й відкликання доступів: власник дозволений, гість і користувач без доступу отримують 403
 
 # Звіт за 7 групове завдання
-Докладний звіт зі знімками сторінок для різних ролей: `Report_Lab7.md`.
+Докладний звіт зі знімками сторінок для різних ролей: `reports/Report_Lab7.md`.
 - Малій Олександра:
     - Розбила завдання на issues, провела рев'ю та злиття PR команди, розв'язала конфлікт у PR сторінки пристрою
     - Перенесла REST під `/api`, розділила безпеку на три `SecurityFilterChain` (JWT, інструменти, сторінки з формою входу й CSRF), створила модуль `server.web` і `WebExceptionHandler`
@@ -143,4 +143,13 @@
     - Реалізував сторінку «Мої пристрої» та форму додавання пристрою (валідація, PRG) з тестами контролерів
 - Мошенський Олег:
     - Написав `WebSecurityTest`: 13 тестів безпеки сторінок на справжньому ланцюгу
-    - Підготував знімки сторінок для різних ролей, звіт `Report_Lab7.md` і перелік сторінок у README
+    - Підготував знімки сторінок для різних ролей, звіт `reports/Report_Lab7.md` і перелік сторінок у README
+# Звіт за 8 групове завдання
+Докладний звіт зі структурою тестів за рівнями та знімками браузерних тестів: `reports/Report_Lab8.md`.
+- Малій Олександра:
+    - Підключила Testcontainers (PostgreSQL у Docker замість H2), створила спільні анотації `@IntegrationTest` та `@E2ETest`, `SeedData` і `reset-data.sql`, перевела наявні `@SpringBootTest` та `@DataJpaTest` на PostgreSQL
+    - Відокремила end-to-end тести завданням Gradle `e2eTest`, додала `installPlaywright` і крок встановлення браузера в CI, закріпила воркфлоу на `ubuntu-24.04`
+    - Написала браузерні тести Playwright з Page Object (`ThymeleafUiE2EIT`) та звіт `reports/Report_Lab8.md`
+- Олійник Діана:
+    - Написала інтеграційні CRUD-тести з перевіркою таблиць через `JdbcClient`: `UserCrudTest`, `DeviceCrudTest`, `DeviceAccessCrudTest`, `CommandCrudTest`, `CommandExecutionCrudTest`
+- Тест ключового сценарію з ролями `DeviceControlFlowTest` і REST end-to-end тест `ApiE2EIT` на `RestTestClient` (PR #135 і #134, автор SquidBow)
