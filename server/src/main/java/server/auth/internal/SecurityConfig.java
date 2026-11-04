@@ -20,6 +20,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import server.ApiPaths;
 import tools.jackson.databind.ObjectMapper;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
 @EnableWebSecurity
@@ -60,6 +61,7 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
+    @Profile("!prod")
     public SecurityFilterChain toolsFilterChain(HttpSecurity http) throws Exception {
         return http
                 .securityMatcher("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**")
