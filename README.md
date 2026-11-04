@@ -239,3 +239,13 @@
 | `error/403`, `error/404`, `error/5xx` | сторінки помилок | усі |
 
 Знімки сторінок для різних ролей лежать у `reports/screenshots/lab7/`.
+
+## 11. Розгортання
+
+Сервер і PostgreSQL запускаються в Docker Compose з профілем `prod`. Докладно: `reports/Report_Lab9.md`.
+
+1. Створити `.env` за зразком `.env.example` і задати власні `POSTGRES_PASSWORD` та `JWT_SECRET` (не коротше 32 символів). Без `.env` `docker compose` не стартує.
+2. Зібрати й запустити: `docker compose up -d --build`. Сервер доступний лише локально на `http://127.0.0.1:8080`.
+3. Відкрити доступ з Інтернету: `ngrok http 8080` (токен додається один раз командою `ngrok config add-authtoken …` і не комітиться). Ngrok видає тимчасову HTTPS-адресу.
+
+У prod вимкнені Swagger UI, OpenAPI та H2-консоль.
