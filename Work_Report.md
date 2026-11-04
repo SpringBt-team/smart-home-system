@@ -152,4 +152,16 @@
     - Написала браузерні тести Playwright з Page Object (`ThymeleafUiE2EIT`) та звіт `reports/Report_Lab8.md`
 - Олійник Діана:
     - Написала інтеграційні CRUD-тести з перевіркою таблиць через `JdbcClient`: `UserCrudTest`, `DeviceCrudTest`, `DeviceAccessCrudTest`, `CommandCrudTest`, `CommandExecutionCrudTest`
-- Тест ключового сценарію з ролями `DeviceControlFlowTest` і REST end-to-end тест `ApiE2EIT` на `RestTestClient` (PR #135 і #134, автор SquidBow)
+- Забіяка Денис:
+    - Написав тест ключового сценарію з ролями `DeviceControlFlowTest` і REST end-to-end тест `ApiE2EIT` на `RestTestClient` (PR #135 і #134)
+
+# Звіт за 9 групове завдання
+Докладний звіт з архітектурою розгортання, файлами налаштувань і результатами перевірок: `reports/Report_Lab9.md`.
+- Малій Олександра:
+    - Створила багатостадійний `Dockerfile` (запуск від непривілейованого користувача), `docker-compose.yml` з PostgreSQL, healthcheck і постійними томами, `.env.example` (PR #141)
+- Мошенський Олег:
+    - Налаштував prod-профіль: PostgreSQL, graceful shutdown, довірені заголовки проксі для HTTPS, захищені cookie (PR #142)
+- Олійник Діана:
+    - Відкрила доступ через Ngrok, перевірила вхід з телефону через мобільний Інтернет, REST і Newman через публічну адресу, перевірки розгортання та захисту, написала звіт `reports/Report_Lab9.md`
+- Забіяка Денис:
+    - Закрив у prod запасний JWT-секрет, Swagger, OpenAPI і H2-консоль, написав тест `ProdProfileSecurityTest` (PR #144)
