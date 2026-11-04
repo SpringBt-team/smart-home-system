@@ -2,68 +2,85 @@
 
 ## Архітектура розгортання
 
-Застосунок запущено локально в Docker Compose. Ngrok створює вихідне з'єднання з комп'ютера до свого сервера та передає зовнішні HTTPS-запити на порт `8080`, опублікований лише на loopback-інтерфейсі `127.0.0.1`.
+Сервер і PostgreSQL працюють у Docker Compose. Ngrok відкриває вихідне з'єднання до свого сервера й передає зовнішні HTTPS-запити на `127.0.0.1:8080`, тому білий IP і налаштування роутера не потрібні.
 
 ```text
-Користувач у браузері
-        │ HTTPS
-        ▼
-Публічна адреса Ngrok
-        │ тунель → localhost:8080
-        ▼
-Контейнер server (Spring Boot, порт 8080)
-        │ внутрішня мережа Docker
-        ▼
-Контейнер db (PostgreSQL 17)
+Користувач ──HTTPS──▶ Ngrok ──тунель──▶ localhost:8080 ──▶ контейнер server ──▶ контейнер db (PostgreSQL 17)
 ```
 
-Docker обрано для відтворюваного запуску серверної частини та PostgreSQL із постійним томом для даних. Ngrok дає змогу перевірити доступ з Інтернету без білого IP і налаштування маршрутизатора. Публічна адреса безкоштовного тунелю тимчасова та доступна, поки працює агент Ngrok.
+Docker дає відтворюваний запуск сервера й бази з постійним томом даних. Ngrok відкриває доступ з Інтернету без змін у мережі; адреса безкоштовного тунелю тимчасова.
 
 ## Файли конфігурації
 
-- [`Dockerfile`](../Dockerfile) — багатостадійно збирає JAR модуля `server`; фінальний образ використовує Java 25 JRE і запускається від непривілейованого користувача `10001:10001`.
-- [`docker-compose.yml`](../docker-compose.yml) — описує сервіси PostgreSQL і сервера, healthcheck бази, постійні томи, залежність сервера від готової бази та публікацію `127.0.0.1:8080:8080`. Пароль БД та JWT-секрет обов'язкові.
-- [`.env.example`](../.env.example) — шаблон змінних `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` і `JWT_SECRET`. Для запуску створюється локальний `.env`; цей файл і токен Ngrok не додаються до репозиторію чи архіву.
-- [`application-prod.properties`](../server/src/main/resources/application-prod.properties) — параметри prod-профілю: graceful shutdown, довірені заголовки проксі, secure/HttpOnly/SameSite cookie та вимкнений SQL logging.
+- [`Dockerfile`](../Dockerfile): багатостадійна збірка JAR модуля `server`, образ на Java 25 JRE, запуск від непривілейованого користувача `10001`.
+- [`docker-compose.yml`](../docker-compose.yml): сервіси `db` і `server`, healthcheck бази, постійні томи, порт лише на `127.0.0.1:8080`. Пароль БД і `JWT_SECRET` обов'язкові.
+- [`.env.example`](../.env.example): шаблон `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `JWT_SECRET`. Локальний `.env` і токен Ngrok не потрапляють у репозиторій та архів.
+- [`application-prod.properties`](../server/src/main/resources/application-prod.properties): graceful shutdown, довірені заголовки проксі, secure/HttpOnly/SameSite cookie; `security.jwt.secret=${JWT_SECRET}` без запасного значення; вимкнені H2-консоль, OpenAPI і Swagger UI. Ланцюжок `toolsFilterChain` і лог прикладу хешу пароля в prod не створюються (`@Profile("!prod")`).
 
-## Запуск
+Запуск: створити `.env` за `.env.example`, виконати `docker compose up -d --build`, потім `ngrok http 8080`.
 
-1. Створити локальний файл `.env` на основі `.env.example` і встановити власні секрети.
-2. Запустити контейнери: `docker compose up -d --build`.
-3. Переконатися в стані сервісів командою `docker compose ps`.
-4. Запустити тунель командою `ngrok http 8080` та перевірити видану адресу з зовнішньої мережі.
+## Доступ через Ngrok
 
-## Результати перевірок
+### Тунель
+![Термінал Ngrok](screenshots/lab9/ngrok_terminal.png)
 
-Зафіксований запуск Docker Compose завершився успішно: образ `smarthome-server:latest` зібрано, контейнер БД перейшов у стан `healthy`, контейнер `server` запущений. `docker compose ps` показав порт `127.0.0.1:8080->8080/tcp`.
+Результат: статус `online`, адреса `https://earthworm-overshoot-backup.ngrok-free.dev` пересилає на `http://localhost:8080`. Токена на знімку немає.
 
-Ngrok запущено зі статусом `online`; на момент перевірки він видав адресу `https://earthworm-overshoot-backup.ngrok-free.dev` і пересилав трафік на `http://localhost:8080`. Адреса є тимчасовою.
+### Сторінка входу на телефоні
+![Вхід на телефоні через 4G](screenshots/lab9/mobile_login.jpg)
+
+Результат: через мобільний Інтернет (4G) відкривається `/login`, вхід під `owner@example.com` проходить, після входу адреса лишається `https://`.
+
+### Панель Ngrok
+![Панель Ngrok](screenshots/lab9/ngrok_dashboard.png)
+
+Результат: у `http://127.0.0.1:4040` видно запити `GET /login` → `200` через публічну адресу. Колекція Postman (Newman) через публічну адресу теж пройшла.
+
+## Перевірки захисту
+
+### Перший запуск, до закриття службових сторінок
+![Перевірки захисту до #137](screenshots/lab9/security_checks.png)
+
+Результат: `/v3/api-docs` віддавав `200 OK`, `/swagger-ui.html` вів на відкритий Swagger UI, `/h2-console` перенаправляв на `/h2-console/`. Після цього в prod закрили JWT-секрет, Swagger, OpenAPI і H2 (#137).
+
+### Повторна перевірка
+
+Образ перезібрано, перевірки повторено на `http://localhost:8080`, куди Ngrok пересилає запити:
+
+```text
+GET /login                  -> 200
+GET /swagger-ui.html        -> 302 /login
+GET /swagger-ui/index.html  -> 302 /login
+GET /v3/api-docs            -> 302 /login
+GET /h2-console             -> 302 /login
+GET /h2-console/            -> 302 /login
+
+POST /api/users  -> 201 {"id":"b5cf28a5-…","email":"lab9-…@example.com","name":"Lab9",…}
+POST /api/login  -> 200 {"accessToken":"…","tokenType":"Bearer","expiresIn":900}
+
+newman run postman/collection.json: requests 7/0 failed, assertions 11/0 failed
+
+prod без JWT_SECRET: Could not resolve placeholder 'JWT_SECRET' … Application run failed
+```
+
+Службові сторінки без входу недоступні, REST і колекція Postman працюють, без секрету сервер не стартує. Хеш демо-пароля в лог prod більше не пишеться.
+
+## Перевірки розгортання
 
 | Перевірка | Результат |
 |---|---|
-| Відкриття `/login` через публічну адресу з мобільної мережі | Успішно відкрито мобільну версію через 4G. Знімок: [`screenshots/lab9/mobile_login.png`](screenshots/lab9/mobile_login.png). |
-| Вхід через вебформу та збереження HTTPS після входу | Успішно виконано вхід із Seed-користувачем `owner@example.com`; HTTPS збережено, помилок змішаного вмісту не зафіксовано. |
-| Newman через публічну адресу (`POST /api/users`, `POST /api/login` та сценарій колекції) | Регресійне тестування через публічний тунель Ngrok пройшло успішно. |
-| Панель Ngrok `http://127.0.0.1:4040` | Зафіксовано запити `GET /login` (`200 OK`) і завантаження статичних ресурсів. Знімок: [`screenshots/lab9/ngrok_dashboard.png`](screenshots/lab9/ngrok_dashboard.png). |
-| Анонімний `GET /swagger-ui.html` | **Перевірку захисту не пройдено:** отримано `302 Found` із `Location: /swagger-ui/index.html`; кінцева адреса — `/swagger-ui/index.html`, статус `200 OK`. Swagger UI доступний без автентифікації. Знімок: [`screenshots/lab9/security_checks.png`](screenshots/lab9/security_checks.png). |
-| Анонімний `GET /v3/api-docs` | **Перевірку захисту не пройдено:** отримано `200 OK`, `Content-Type: application/json`; документація API доступна без автентифікації. Потрібно закрити цей маршрут і повторити перевірку. |
-| Анонімний `GET /h2-console` | Отримано `302 Found` із перенаправленням на `/h2-console/`. Кінцеву відповідь після перенаправлення ще не перевірено, тому захист консолі не підтверджено. Знімок заголовків: [`screenshots/lab9/security_checks.png`](screenshots/lab9/security_checks.png). |
-| Compose без `.env` | Завантаження конфігурації відхилено через відсутність обов'язкових змінних середовища та секретів. |
-| `docker compose exec server id` | `uid=10001(smarthome) gid=10001(smarthome) groups=10001(smarthome)`; сервер працює від непривілейованого користувача, не root. |
-| Перезапуск після `docker compose exec server kill 1` | Контейнер сервера автоматично перезапустився відповідно до політики `restart`. |
-| Graceful shutdown після `docker compose stop server` | У логах зафіксовано коректне зупинення Tomcat, закриття пулу з'єднань HikariCP і завершення без аварії. |
-| Збереження даних після `docker compose down` та повторного `up -d` | Дані користувачів і пристроїв збережено завдяки постійному тому PostgreSQL `pgdata`. |
-
-Скріншоти зберігаються у `reports/screenshots/lab9/`. До комплекту належать термінал Ngrok без токена, успішний REST-запит через публічну адресу, панель Ngrok із запитом, сторінка на телефоні через мобільний Інтернет і результати перевірок захисту. Перевірки виявили, що Swagger UI (`/swagger-ui/index.html`) і OpenAPI-документація (`/v3/api-docs`) доступні анонімно. До здачі потрібно змінити налаштування безпеки та повторити перевірки цих маршрутів і `/h2-console/`.
+| `docker compose up` без `.env` | Відмова: не задані обов'язкові змінні |
+| `docker compose exec server id` | `uid=10001(smarthome)`, не root |
+| `docker compose exec server kill 1` | Контейнер перезапустився за політикою `restart` |
+| `docker compose stop server` | У лозі коректне зупинення Tomcat і пулу HikariCP |
+| `docker compose down`, потім `up -d` | Користувачі й пристрої збереглися в томі `pgdata` |
 
 ## Ризики, що лишилися
 
 - Відкрита реєстрація через `POST /api/users`.
-- Seed-акаунти з відомим паролем `Passw0rd123` залишаються в prod.
-- Немає перевірки прав на `/api/users`, `/api/devices` та виконання команд: зареєстрований користувач може змінювати й видаляти чужі дані.
-- Ідентифікація через заголовок `X-User-Id` не перевіряється.
-- Немає обмеження кількості спроб входу.
-- Використовується `spring.jpa.hibernate.ddl-auto=update` замість міграцій схеми.
-- Публічна адреса Ngrok тимчасова та змінюється після перезапуску агента.
-- Токен Ngrok є секретом; його не можна комітити, публікувати або показувати на знімках.
-
+- Seed-акаунти з відомим паролем `Passw0rd123` лишаються в prod.
+- Немає перевірки прав на `/api/users`, `/api/devices` і виконання команд: будь-який зареєстрований користувач може змінювати й видаляти чужі дані.
+- Ідентифікація заголовком `X-User-Id` без перевірки.
+- Немає обмеження спроб входу.
+- `spring.jpa.hibernate.ddl-auto=update` замість міграцій.
+- Адреса Ngrok тимчасова, токен Ngrok є секретом.
