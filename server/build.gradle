@@ -18,6 +18,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:7.12.0'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.12.0'
     implementation 'org.springframework.modulith:spring-modulith-starter-core'
     implementation 'com.networknt:json-schema-validator:3.0.7'
     runtimeOnly 'org.postgresql:postgresql'
