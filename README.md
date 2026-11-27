@@ -244,7 +244,7 @@
 
 Сервер і PostgreSQL запускаються в Docker Compose з профілем `prod`. Докладно: `reports/Report_Lab9.md`.
 
-1. Створити `.env` за зразком `.env.example` і задати власні `POSTGRES_PASSWORD` та `JWT_SECRET` (не коротше 32 символів). Без `.env` `docker compose` не стартує.
+1. Створити `.env` за зразком `.env.example` і задати власні `POSTGRES_PASSWORD`, `JWT_SECRET` (не коротше 32 символів) та `ACTUATOR_ADMIN_PASSWORD` (пароль адміністратора службових адрес Actuator). Без `.env` `docker compose` не стартує.
 2. Зібрати й запустити: `docker compose up -d --build`. Сервер доступний лише локально на `http://127.0.0.1:8080`.
 3. Відкрити доступ з Інтернету: `ngrok http 8080` (токен додається один раз командою `ngrok config add-authtoken …` і не комітиться). Ngrok видає тимчасову HTTPS-адресу.
 
