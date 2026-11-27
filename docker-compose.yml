@@ -31,6 +31,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
       JWT_SECRET: ${JWT_SECRET:?задайте JWT_SECRET у файлі .env}
+      ACTUATOR_ADMIN_PASSWORD: ${ACTUATOR_ADMIN_PASSWORD:?задайте ACTUATOR_ADMIN_PASSWORD у файлі .env}
     volumes:
       - applogs:/app/logs
 
