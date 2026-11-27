@@ -11,7 +11,9 @@ import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "security.jwt.secret=12345678901234567890123456789012")
+@SpringBootTest(properties = {
+        "security.jwt.secret=12345678901234567890123456789012",
+        "actuator.admin.password=test-admin-password-0123456789"})
 @AutoConfigureMockMvc
 @ActiveProfiles("prod")
 @Import(TestcontainersConfiguration.class)
